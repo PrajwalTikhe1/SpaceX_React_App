@@ -1,25 +1,57 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import "./App.css";
+import { Flights } from "./components/Flights";
+import { flightList } from "./redux/flightListSlice";
+import { Loader } from "./components/utils/Loader";
+import { Alerts } from "./components/utils/Alerts";
 
-function App() {
+const App = () => {
+  const [searchFlights, setSearchFlights] = useState("");
+
+  const { flights, pending, error } = useSelector((state) => state.flightList);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(flightList());
+  }, [dispatch]);
+
+  const filteredFlights = flights.filter((flight) => {
+    if (searchFlights === "") {
+      return flight;
+    } else if (
+      flight.mission_name.toLowerCase().includes(searchFlights.toLowerCase())
+    ) {
+      return flight;
+    } else {
+      return 0;
+    }
+  });
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <div className="container">
+        <h1 className="head">SpaceX</h1>
+        <div className="row justify-content-center search mx-auto">
+          <input
+            className="searchbar"
+            type="text"
+            placeholder="Search flight missions..."
+            onChange={(e) => {
+              setSearchFlights(e.target.value);
+            }}
+          />
+        </div>
+        {pending ? (
+          <Loader />
+        ) : error ? (
+          <Alerts variant="danger">{error}</Alerts>
+        ) : (
+          <Flights filteredFlights={filteredFlights} />
+        )}
+      </div>
+    </>
   );
-}
+};
 
 export default App;
